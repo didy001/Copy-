@@ -70,6 +70,39 @@ async function startServer() {
     }
   });
 
+  app.get('/api/dashboard/overview', async (_req, res) => {
+    try {
+      const templatesSnapshot = await getDocs(collection(db, 'templates'));
+      const totalAutomations = templatesSnapshot.size;
+
+      let activeWorkflows = 0;
+
+      if (n8nConnector.isConfigured()) {
+        try {
+          const n8nListResponse = await n8nConnector.listWorkflows();
+          const workflows = Array.isArray(n8nListResponse?.data)
+            ? n8nListResponse.data
+            : Array.isArray(n8nListResponse)
+              ? n8nListResponse
+              : [];
+
+          activeWorkflows = workflows.filter((workflow: any) => workflow?.active === true).length;
+        } catch {
+          // n8n is optional in local dev; keep endpoint resilient
+        }
+      }
+
+      res.json({
+        totalAutomations,
+        activeWorkflows,
+        executions24h: null,
+        failedRuns: null,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
