@@ -22,6 +22,10 @@ export class N8NConnector {
     };
   }
 
+  isConfigured() {
+    return Boolean(this.apiKey && this.baseUrl);
+  }
+
   async createWorkflow(workflow: N8NWorkflow) {
     const response = await axios.post(`${this.baseUrl}/api/v1/workflows`, workflow, {
       headers: this.headers

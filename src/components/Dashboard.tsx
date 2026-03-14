@@ -3,17 +3,73 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Play, Clock, CheckCircle2, AlertCircle, PlusCircle, Zap } from 'lucide-react';
+import { Play, Clock, CheckCircle2, AlertCircle, PlusCircle, Zap, Loader2 } from 'lucide-react';
+
+interface DashboardOverview {
+  totalAutomations: number;
+  activeWorkflows: number;
+  executions24h: number | null;
+  failedRuns: number | null;
+}
+
+const fallbackOverview: DashboardOverview = {
+  totalAutomations: 0,
+  activeWorkflows: 0,
+  executions24h: null,
+  failedRuns: null,
+};
 
 export default function Dashboard() {
+  const [overview, setOverview] = useState<DashboardOverview>(fallbackOverview);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const response = await fetch('/api/dashboard/overview');
+        const data = await response.json();
+        setOverview({
+          totalAutomations: data.totalAutomations ?? 0,
+          activeWorkflows: data.activeWorkflows ?? 0,
+          executions24h: data.executions24h ?? null,
+          failedRuns: data.failedRuns ?? null,
+        });
+      } catch (error) {
+        console.error('Failed to fetch dashboard overview:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOverview();
+  }, []);
+
   const stats = [
-    { label: 'Total Automations', value: '12', icon: Play, color: 'bg-blue-500' },
-    { label: 'Active Workflows', value: '8', icon: CheckCircle2, color: 'bg-emerald-500' },
-    { label: 'Executions (24h)', value: '142', icon: Clock, color: 'bg-violet-500' },
-    { label: 'Failed Runs', value: '3', icon: AlertCircle, color: 'bg-rose-500' },
+    { label: 'Total Automations', value: String(overview.totalAutomations), icon: Play, color: 'bg-blue-500' },
+    { label: 'Active Workflows', value: String(overview.activeWorkflows), icon: CheckCircle2, color: 'bg-emerald-500' },
+    {
+      label: 'Executions (24h)',
+      value: overview.executions24h === null ? 'N/A' : String(overview.executions24h),
+      icon: Clock,
+      color: 'bg-violet-500',
+    },
+    {
+      label: 'Failed Runs',
+      value: overview.failedRuns === null ? 'N/A' : String(overview.failedRuns),
+      icon: AlertCircle,
+      color: 'bg-rose-500',
+    },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-[#141414]/20" size={48} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -30,7 +86,7 @@ export default function Dashboard() {
               <div className={`${stat.color} p-2 rounded-lg text-white`}>
                 <stat.icon size={20} />
               </div>
-              <span className="text-xs font-bold text-emerald-500">+12%</span>
+              <span className="text-xs font-bold text-emerald-500">Live</span>
             </div>
             <p className="text-[#141414]/40 text-sm font-medium">{stat.label}</p>
             <h3 className="text-3xl font-bold mt-1 tracking-tight">{stat.value}</h3>
@@ -74,4 +130,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
