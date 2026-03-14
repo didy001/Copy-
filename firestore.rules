@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: templates
+    // Fields:
+    //   - name: string (required)
+    //   - description: string
+    //   - variables: list
+    //   - nodes: list (required)
+    //   - connections: map (required)
+    //   - version: int
+    //   - createdAt: timestamp
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidTemplate(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.nodes is list && data.nodes.size() > 0 &&
+             data.connections is map;
+    }
+
+    match /templates/{templateId} {
+      allow read: if true; // Publicly readable for the demo
+      allow create: if isAuthenticated() && isValidTemplate(request.resource.data);
+      allow update: if isAuthenticated() && isValidTemplate(request.resource.data);
+      allow delete: if isAuthenticated();
+    }
+  }
+}

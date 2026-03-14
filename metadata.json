@@ -1,0 +1,5 @@
+{
+  "name": "n8n Automation Factory",
+  "description": "A platform to build, manage, and deploy AI-generated automation templates for n8n.",
+  "requestFramePermissions": []
+}

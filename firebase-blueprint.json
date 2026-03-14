@@ -1,0 +1,25 @@
+{
+  "entities": {
+    "templates": {
+      "title": "Automation Template",
+      "description": "A template for an n8n automation workflow",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the template" },
+        "description": { "type": "string", "description": "Description of the template" },
+        "variables": { "type": "array", "items": { "type": "string" }, "description": "List of variable placeholders" },
+        "nodes": { "type": "array", "items": { "type": "object" }, "description": "List of n8n nodes" },
+        "connections": { "type": "object", "description": "Node connections map" },
+        "version": { "type": "integer", "description": "Template version" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "nodes", "connections"]
+    }
+  },
+  "firestore": {
+    "templates": {
+      "schema": "templates",
+      "description": "Collection of automation templates"
+    }
+  }
+}
